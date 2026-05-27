@@ -368,7 +368,11 @@ area.addEventListener('mousemove',e=>{
 });
 
 let lastTouchX=null;
-area.addEventListener('touchstart',e=>{ e.preventDefault(); lastTouchX=e.touches[0].clientX; },{ passive:false });
+area.addEventListener('touchstart', e => {
+  // 게임 중일 때만 preventDefault (버튼 터치는 통과시킴)
+  if (state === 'playing') e.preventDefault();
+  lastTouchX = e.touches[0].clientX;
+}, { passive: false });
 area.addEventListener('touchmove',e=>{
   e.preventDefault();
   if(state!=='playing'||lastTouchX===null) return;
