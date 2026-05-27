@@ -316,10 +316,20 @@ function loop(){
     updateBallEl(b);
   }
 
-  if(alive===0){ lives--; if(lives<=0){ gameOver(); return; } updateHUD(); resetRound(); raf=requestAnimationFrame(loop); return; }
-  sfxLose();
-  if(bricks.filter(b=>b.alive).length===0){ state='clear'; cancelAnimationFrame(raf); score+=500*(level+1); updateHUD(); setTimeout(nextLevel,700); return; }
-  sfxClear();
+  if(alive===0){
+  lives--;
+  sfxLose();  // ← if 안으로 이동
+  if(lives<=0){ gameOver(); return; }
+  updateHUD(); resetRound();
+  raf=requestAnimationFrame(loop); return;
+}
+
+if(bricks.filter(b=>b.alive).length===0){
+  sfxClear();  // ← if 안으로 이동
+  state='clear'; cancelAnimationFrame(raf);
+  score+=500*(level+1); updateHUD();
+  setTimeout(nextLevel,700); return;
+}
 
   raf=requestAnimationFrame(loop);
 }
