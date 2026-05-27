@@ -1,3 +1,35 @@
+// ── 효과음 ──────────────────────────────────
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  return audioCtx;
+}
+
+function playSound(freq, type, duration, vol = 0.3) {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration);
+  } catch(e) {}
+}
+
+// 상황별 효과음
+function sfxBrick()   { playSound(440, 'square',   0.08, 0.25); }
+function sfxPaddle()  { playSound(220, 'sine',     0.1,  0.2);  }
+function sfxPowerup() { playSound(880, 'sine',     0.3,  0.4);  }
+function sfxLose()    { playSound(120, 'sawtooth', 0.5,  0.3);  }
+function sfxClear()   { playSound(660, 'sine',     0.6,  0.5);  }
+
 /* ── LEVEL DATA ───────────────────────────── */
 const LEVELS = [
   [[1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1]],
@@ -118,6 +150,7 @@ function updateBallEl(b){
 
 /* ── POWERUP ─────────────────────────────── */
 function activatePowerup(type){
+  sfxPowerup();
   if(puTimers[type]) clearTimeout(puTimers[type]);
   puActive[type]=true;
   if(type==='widebar'){
@@ -245,6 +278,7 @@ function loop(){
     /* paddle */
     if(b.y+BALL_R*2>=PADDLE_Y && b.y+BALL_R*2<=PADDLE_Y+16 && b.x+BALL_R*2>=px && b.x<=px+paddleW && b.vy>0){
       b.vy=-Math.abs(b.vy);
+      sfxPaddle();
       const rel=(b.x+BALL_R-px)/paddleW;
       const spd=puActive.fastball?baseSpeed*2:baseSpeed;
       b.vx=(rel-0.5)*2*spd*1.4;
@@ -258,6 +292,7 @@ function loop(){
         br.hp--;
         if(br.hp<=0){
           br.alive=false; br.el.remove();
+          sfxBrick();
           score+=br.pts*(level+1); updateHUD();
           spawnParticles(br.x+br.w/2, br.y+br.h/2, BRICK_TYPES[br.type].colors[0]);
           if(Math.random()<0.20){
@@ -282,7 +317,9 @@ function loop(){
   }
 
   if(alive===0){ lives--; if(lives<=0){ gameOver(); return; } updateHUD(); resetRound(); raf=requestAnimationFrame(loop); return; }
+  sfxLose();
   if(bricks.filter(b=>b.alive).length===0){ state='clear'; cancelAnimationFrame(raf); score+=500*(level+1); updateHUD(); setTimeout(nextLevel,700); return; }
+  sfxClear();
 
   raf=requestAnimationFrame(loop);
 }
