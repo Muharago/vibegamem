@@ -9,9 +9,14 @@
 <body>
 <div id="wrapper">
 
+  <div id="event-banner">
+    <i>🏆</i> <span id="banner-text"></span>
+  </div>
+
   <div id="hud">
     <div>SCORE&nbsp;<span id="score-val">0</span></div>
     <div id="level-badge">LV&nbsp;<span id="level-val">1</span></div>
+    <div id="multiplier-badge" style="display:none;">×<span id="mult-val">1</span></div>
     <div>BEST&nbsp;<span id="best-val">0</span></div>
     <div>LIVES&nbsp;<span id="lives-val">♥ ♥ ♥</span></div>
   </div>
@@ -30,8 +35,14 @@
     </div>
     <div id="name-modal" style="display:none;">
       <h2>NEW RECORD!</h2>
-      <p>닉네임을 입력하세요</p>
-      <input id="name-input" maxlength="8" placeholder="PLAYER" autocomplete="off"/>
+      <p class="modal-sub">이번 달 랭킹에 등록됩니다</p>
+      <input id="name-input" maxlength="8" placeholder="닉네임 (8자)" autocomplete="off"/>
+      <input id="email-input" type="email" placeholder="이메일 (당첨 연락용)" autocomplete="off"/>
+      <label id="privacy-label">
+        <input type="checkbox" id="privacy-check"/>
+        <span>이메일은 이벤트 당첨 연락 목적으로만 사용됩니다</span>
+      </label>
+      <p id="privacy-error" style="display:none;">동의가 필요해요</p>
       <button id="name-submit">SAVE</button>
     </div>
   </div>
@@ -50,6 +61,7 @@
 
   <div id="lb-panel">
     <h2>HALL OF FAME</h2>
+    <p id="lb-period"></p>
     <div id="lb-list"></div>
   </div>
 
@@ -58,6 +70,103 @@
   </div>
 
 </div>
+
+<script type="module">
+import { initializeApp }     from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, limit, Timestamp }
+  from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCgxsHUQWz36dLbeMOjBOGpXmwz0-NC1AI",
+  authDomain: "vibegame-gang.firebaseapp.com",
+  projectId: "vibegame-gang",
+  storageBucket: "vibegame-gang.firebasestorage.app",
+  messagingSenderId: "588266757448",
+  appId: "1:588266757448:web:1ec8856cebe9072001277d",
+  measurementId: "G-GGB374NH3S"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+/* ── 월별 기간 계산 ── */
+function getMonthRange() {
+  const now   = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+  return { start, end };
+}
+
+function formatDate(d) {
+  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+}
+
+/* ── 이벤트 배너 ── */
+function renderBanner() {
+  const { start, end } = getMonthRange();
+  document.getElementById('banner-text').textContent =
+    `이달의 랭킹 이벤트 ${formatDate(start)} ~ ${formatDate(end)} | 1~3위 선물 증정!`;
+}
+renderBanner();
+
+/* ── 이달 기간 표시 ── */
+function renderPeriod() {
+  const { start, end } = getMonthRange();
+  document.getElementById('lb-period').textContent =
+    `${formatDate(start)} ~ ${formatDate(end)}`;
+}
+
+/* ── Firestore 점수 저장 ── */
+window.saveScoreOnline = async function(name, email, score, level) {
+  try {
+    await addDoc(collection(db, 'scores'), {
+      name:  name.toUpperCase().slice(0,8) || 'ANON',
+      email: email,
+      score: score,
+      level: level,
+      date:  Timestamp.fromDate(new Date())
+    });
+  } catch(e) {
+    console.error('점수 저장 실패:', e);
+  }
+};
+
+/* ── Firestore 이달 순위 불러오기 ── */
+window.loadOnlineLeaderboard = async function() {
+  const { start, end } = getMonthRange();
+  renderPeriod();
+  const lbList = document.getElementById('lb-list');
+  lbList.innerHTML = '<p class="lb-empty">불러오는 중...</p>';
+  try {
+    const q = query(
+      collection(db, 'scores'),
+      where('date', '>=', Timestamp.fromDate(start)),
+      where('date', '<=', Timestamp.fromDate(end)),
+      orderBy('date'),
+      limit(20)
+    );
+    const snap = await getDocs(q);
+    const docs = [];
+    snap.forEach(d => docs.push(d.data()));
+    docs.sort((a,b) => b.score - a.score);
+    const top = docs.slice(0, 10);
+    if (!top.length) {
+      lbList.innerHTML = '<p class="lb-empty">이번 달 기록이 없어요</p>';
+      return;
+    }
+    const rc = ['gold','silver','bronze'];
+    lbList.innerHTML = top.map((e,i) => `
+      <div class="lb-row">
+        <span class="lb-rank ${rc[i]||''}">${i+1}.</span>
+        <span class="lb-name">${e.name}</span>
+        <span class="lb-score">${e.score.toLocaleString()}</span>
+      </div>`).join('');
+  } catch(e) {
+    lbList.innerHTML = '<p class="lb-empty">불러오기 실패. 잠시 후 다시 시도해주세요.</p>';
+  }
+};
+</script>
+
 <script src="game.js" defer></script>
 </body>
 </html>

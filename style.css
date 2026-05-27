@@ -282,3 +282,83 @@
   @keyframes blink-badge{ 0%,100%{opacity:1} 50%{opacity:0.55} }
 
   .particle { position: absolute; border-radius: 50%; pointer-events: none; animation: pop 0.4s ease-out forwards; }
+
+/* ── 이벤트 배너 ── */
+#event-banner {
+  width: var(--gw);
+  background: linear-gradient(90deg, #ffe600 0%, #ff8c00 100%);
+  color: #0a0a0f;
+  font-size: clamp(5px, 1.5vw, 6px);
+  font-family: 'Press Start 2P', monospace;
+  padding: 7px 12px;
+  border-radius: var(--border-radius-md);
+  text-align: center;
+  letter-spacing: 1px;
+  line-height: 1.8;
+}
+
+/* ── 점수 배율 배지 ── */
+#multiplier-badge {
+  font-size: clamp(5px, 1.8vw, 7px);
+  color: var(--orange);
+  animation: pulse 0.8s ease-in-out infinite;
+}
+
+/* ── 이벤트 기간 표시 ── */
+#lb-period {
+  font-size: clamp(5px, 1.4vw, 6px);
+  color: var(--yellow);
+  text-align: center;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+
+/* ── 메일 입력창 ── */
+#email-input {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(7px, 2vw, 9px);
+  background: var(--bg);
+  color: var(--white);
+  border: 2px solid var(--muted);
+  padding: 7px 12px;
+  text-align: center;
+  width: min(240px, 70vw);
+  letter-spacing: 1px;
+  outline: none;
+  margin-top: 4px;
+}
+#email-input:focus { border-color: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+
+/* ── 개인정보 동의 ── */
+#privacy-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: min(260px, 75vw);
+  cursor: pointer;
+  margin-top: 4px;
+}
+#privacy-label span {
+  font-size: clamp(5px, 1.4vw, 6px);
+  color: var(--muted);
+  line-height: 1.8;
+}
+#privacy-label input[type="checkbox"] {
+  flex-shrink: 0;
+  accent-color: var(--cyan);
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+}
+#privacy-error {
+  font-size: clamp(5px, 1.4vw, 6px);
+  color: var(--pink);
+  margin-top: 2px;
+}
+
+/* ── 모달 부제목 ── */
+.modal-sub {
+  font-size: clamp(5px, 1.5vw, 6px);
+  color: var(--yellow);
+  letter-spacing: 1px;
+}
