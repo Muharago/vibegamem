@@ -7,6 +7,12 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div id="inapp-banner" style="display:none;">
+  <span id="inapp-msg"></span>
+  <a id="inapp-link" href="">외부 브라우저로 열기</a>
+  <button id="inapp-close" onclick="document.getElementById('inapp-banner').style.display='none'">✕</button>
+</div>
+
 <div id="wrapper">
 
   <div id="event-banner">
@@ -165,6 +171,62 @@ window.loadOnlineLeaderboard = async function() {
     lbList.innerHTML = '<p class="lb-empty">불러오기 실패. 잠시 후 다시 시도해주세요.</p>';
   }
 };
+</script>
+
+<script>
+(function() {
+  const ua = navigator.userAgent || '';
+  const isKakao    = /KAKAOTALK/i.test(ua);
+  const isNaver    = /NAVER/i.test(ua) && /inapp/i.test(ua);
+  const isLine     = /Line\//i.test(ua);
+  const isFacebook = /FBAV|FBAN/i.test(ua);
+  const isInApp    = isKakao || isNaver || isLine || isFacebook;
+
+  if (!isInApp) return;
+
+  const banner  = document.getElementById('inapp-banner');
+  const msg     = document.getElementById('inapp-msg');
+  const link    = document.getElementById('inapp-link');
+  const pageUrl = location.href;
+
+  let appName = '인앱 브라우저';
+  if (isKakao)    appName = '카카오톡';
+  if (isNaver)    appName = '네이버';
+  if (isLine)     appName = 'LINE';
+  if (isFacebook) appName = '페이스북';
+
+  msg.textContent = appName + '에서는 게임이 제대로 동작하지 않을 수 있어요.';
+
+  const isIOS     = /iPhone|iPad|iPod/i.test(ua);
+  const isAndroid = /Android/i.test(ua);
+
+  if (isAndroid) {
+    link.href = 'intent://' + pageUrl.replace(/^https?:\/\//, '') +
+      '#Intent;scheme=https;action=android.intent.action.VIEW;' +
+      'package=com.android.chrome;end';
+    link.textContent = 'Chrome으로 열기';
+  } else if (isIOS) {
+    link.href = pageUrl;
+    link.onclick = function(e) {
+      e.preventDefault();
+      // iOS: 클립보드에 URL 복사 후 안내
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(pageUrl).then(() => {
+          alert('링크가 복사되었어요!\nSafari 주소창에 붙여넣기 해주세요.');
+        });
+      } else {
+        prompt('아래 주소를 복사해서 Safari에서 열어주세요:', pageUrl);
+      }
+    };
+    link.textContent = 'Safari로 열기';
+  } else {
+    link.href = pageUrl;
+    link.target = '_blank';
+    link.textContent = '외부 브라우저로 열기';
+  }
+
+  banner.style.display = 'flex';
+})();
 </script>
 
 <script src="game.js" defer></script>
