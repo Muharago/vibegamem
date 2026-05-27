@@ -119,6 +119,7 @@
     gap: 14px;
     background: rgba(10,10,15,0.92);
     z-index: 5;
+    touch-action: auto; /* 추가 — 터치 이벤트 허용 */
   }
   #overlay h1 {
     font-size: clamp(16px, 5vw, 26px);
@@ -147,7 +148,11 @@
     cursor: pointer;
     letter-spacing: 2px;
     transition: color 0.2s, background 0.2s;
-  }
+    position: relative;
+  z-index: 10;
+  touch-action: manipulation; /* 추가 */
+}
+  
   .ov-btn:hover, .ov-btn:active { background: var(--cyan); color: var(--bg); }
 
   #powerup-hud {

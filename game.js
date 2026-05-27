@@ -404,5 +404,8 @@ window.addEventListener('resize',()=>{
   }
 });
 
-startBtn.addEventListener('click',startGame);
-updateHUD();
+startBtn.addEventListener('click', startGame);
+startBtn.addEventListener('touchend', e => {
+  e.preventDefault();
+  startGame();
+});
